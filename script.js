@@ -5,6 +5,11 @@ const askButton = document.getElementById('askButton')
 const aiResponse = document.getElementById('aiResponse')
 const form = document.getElementById('form')
 
+const markdownToHTML = (text) =>{
+    const converter = new showdown.Converter()
+    return converter.makeHtml(text)
+}
+
 //AIzaSyComSK4_RBxG1ISfjagMZX2PMQvhnR-76Q
 const perguntarAI = async (question, game, apiKey) => {
     const model = "gemini-2.5-flash"
@@ -54,7 +59,7 @@ const enviarFormulario = async (event) => {
     try {
         //perguntar para AI
       const text = await perguntarAI(question, game, apiKey)
-      aiResponse.querySelector('.response-content').innerHTML = text
+      aiResponse.querySelector('.response-content').innerHTML = markdownToHTML(text)
     } catch(error) {
         console.log('Erro: ', error)
     } finally {
