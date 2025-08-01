@@ -15,14 +15,45 @@ const perguntarAI = async (question, game, apiKey) => {
     const model = "gemini-2.5-flash"
     const geminiURL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
     const pergunta = `
-        olha, tenho esse jogo ${game} e queria saber ${question}
+        ## Especialide 
+        Você é um especialista assistente de meta para o jogo ${game}
+    
+        ## Tarefas 
+        Você deve responder as perguntas do usuário com base no seu conhecimento do jogo, estratégias, build e dicas
+
+        ## Regras
+        - Se você não sabe a resposta, responda com 'Não sei' e não tente inventar uma resposta.
+        - Se a pergunta não está relacionada ao jogo, responda com 'Essa pergunta não está relacionada ao jogo'
+        - Considere a data atual ${new Date().toLocaleDateString()}
+        - Faça persquisas atualizadas sobre o patch atual, baseado na data atual, para dar uma resposta coerente
+        - Nunca responda itens que você não tenha certeza de que existe no patch atual.
+        - responda em markdown
+
+        ## Resposta
+        - Economize na resposta, seja direto e responda no máximo 500 caracteres. 
+        - Responda em markdown
+        - Não precisa faxer nenhuma saudação ou despedida, apenas responda o que o usuário está querendo.
+
+        ## Exemplo de resposta 
+        - Pergunta do usuário: Melhor build rengar jungle
+        - resposta: a build mais atual é: \n\n ** Itens: **\n\n coloque os itens aqui. \n\n**Runas:**\n\nexemplo de runas\n\n
+
+        ---
+        Aqui está a pergunta do usuário: ${question}
     `
     
     const contents = [{
+        role:"user",
         parts: [{
             text: pergunta
         }]
     }]
+
+    const tools = [{
+        google_search: {}
+    }]
+
+
 
     // chamada API
     const response = await fetch(geminiURL, {
@@ -31,7 +62,8 @@ const perguntarAI = async (question, game, apiKey) => {
             'Content-Type': 'aplication/json'
         },
         body: JSON.stringify({
-            contents
+            contents,
+            tools
         })
     })
 
@@ -60,6 +92,7 @@ const enviarFormulario = async (event) => {
         //perguntar para AI
       const text = await perguntarAI(question, game, apiKey)
       aiResponse.querySelector('.response-content').innerHTML = markdownToHTML(text)
+      aiResponse.classList.remove('hidden')
     } catch(error) {
         console.log('Erro: ', error)
     } finally {
